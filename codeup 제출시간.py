@@ -9,8 +9,13 @@ html = req.text
 result = BeautifulSoup(html, "html.parser")
 
 submit = result.select (
-    'a'
+    'tr > td > a[data-placement="top"]'
     )
 
 for i in range(len(submit)):
-    print(submit[i], '\n')
+    data = str(submit[i])
+    timeString = data[53:72]
+    year = timeString[0:4]
+    month = timeString[5:7]
+    date = timeString[8:10]
+    print("년도 : " + year + " 월 : " + month + " 일 : "  + date)
