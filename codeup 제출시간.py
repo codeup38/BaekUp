@@ -14,5 +14,3 @@ submit = result.select (
 
 for i in range(len(submit)):
     print(submit[i], '\n')
-
-    print('hi')
