@@ -1,4 +1,5 @@
 import requests
+import re
 from bs4 import BeautifulSoup
 from tqdm import tqdm
 
@@ -69,7 +70,8 @@ def pageCrawling(file, result) :
         if(dataByCrawling[i].text == '') :
             file.write('공백')
         else :
-            file.write(dataByCrawling[i].text)
+            noSpace = re.sub('&nbsp;', '', dataByCrawling[i].text)
+            file.write(noSpace)
         file.write(' ')
 
 def indexCrawling(index, file, result) :
@@ -85,7 +87,8 @@ def indexCrawling(index, file, result) :
         if(dataByCrawling[i].text == '') :
             file.write('공백')
         else :
-            file.write(dataByCrawling[i].text)
+            noSpace = re.sub('&nbsp;', '', dataByCrawling[i].text)
+            file.write(noSpace)
         file.write(' ')
 
 
@@ -112,7 +115,7 @@ AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.77 Safari/537.36'}
     print('\n\n 마지막 제출 번호 : %s 시간 : %s 부터 시작 날짜까지 크롤링을 시작합니다.....' %(endSubmitNumber, endDate))
 
     # 마지막 제출번호부터 시작 날짜까지 크롤링하기
-    file = open("data_origin_BaekJoon.txt",'w+')
+    file = open("data_origin_BaekJoon.txt",'w+', -1, "utf-8")
 
     url = int(endSubmitNumber)
     crawlingFinish = False
@@ -150,7 +153,6 @@ AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.77 Safari/537.36'}
                     for i in range(0,20,1) :
                         curDate = str(submit_date[i])[130:154].split()
                         curDay = curDate[2].split('일')
-                        print('%s일 입니다.' %(curDay))
 
                         if(int(curDay[0]) < int(stDay)) :
                             indexCrawling(i, file, result)
@@ -179,7 +181,8 @@ AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.77 Safari/537.36'}
         
         if(crawlingFinish) :
             break
-
+        
+        file.write('\n')
         url -= 20
     
     file.close()
