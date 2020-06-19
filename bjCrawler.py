@@ -35,10 +35,6 @@ AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.77 Safari/537.36'}
             'tr > td > a[data-placement="top"]'
         )
 
-        # firstCurDate = str(submit_date[0])[130:154].split()
-        # firstCurYear = firstCurDate[0].split('년')
-        # firstCurMonth = firstCurDate[1].split('월')
-        # firstCurDay = firstCurDate[2].split('일')
         lastCurDate = str(submit_date[19])[130:154].split()
         lastCurYear = lastCurDate[0].split('년')
         lastCurMonth = lastCurDate[1].split('월')
@@ -55,10 +51,43 @@ AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.77 Safari/537.36'}
                         'tr > td'
                     )
                     endSubmitNumber = submit_number[i*9].text
-                    return endSubmitNumber, url
+                    return endSubmitNumber, str(submit_date[i])[130:154]
         else :
             url -= 20
             continue
+
+def pageCrawling(file, result) :
+
+    dataByCrawling = result.select(
+        'tr > td'
+    )
+
+    for i in range(0,180,1) :
+        if(i%9 == 0 and i != 0) :
+            file.write('\n')
+        
+        if(dataByCrawling[i].text == '') :
+            file.write('공백')
+        else :
+            file.write(dataByCrawling[i].text)
+        file.write(' ')
+
+def indexCrawling(index, file, result) :
+
+    dataByCrawling = result.select(
+        'tr > td'
+    )
+
+    for i in range(0,index*9,1) :
+        if(i%9 == 0 and i != 0) :
+            file.write('\n')
+        
+        if(dataByCrawling[i].text == '') :
+            file.write('공백')
+        else :
+            file.write(dataByCrawling[i].text)
+        file.write(' ')
+
 
 def main() :
 
@@ -78,10 +107,86 @@ AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.77 Safari/537.36'}
     print('\n\n 크롤링을 시작합니다.\n\n 개수에 따라 시간이 다소 걸릴수 \
 있습니다.')
 
-    # 시작, 마지막 날짜를 통해 시작, 마지막 제출번호 값 저장
-    endSubmitNumber, endUrl = findEndSubmitNumber(latestSubmitNumber, endYear, endMonth, endDay)
-    print(endSubmitNumber, endUrl)
+    # 마지막 날짜를 통해, 마지막 제출번호 구하기
+    endSubmitNumber, endDate = findEndSubmitNumber(latestSubmitNumber, endYear, endMonth, endDay)
+    print('\n\n 마지막 제출 번호 : %s 시간 : %s 부터 시작 날짜까지 크롤링을 시작합니다.....' %(endSubmitNumber, endDate))
 
+    # 마지막 제출번호부터 시작 날짜까지 크롤링하기
+    file = open("data_origin_BaekJoon.txt",'w+')
+
+    url = int(endSubmitNumber)
+    crawlingFinish = False
+
+    while True :
+        req = requests.get('https://www.acmicpc.net/status?top=%d' %(url), headers = user_agent)
+        html = req.text
+        result = BeautifulSoup(html, "html.parser")
+
+        submit_date = result.select(
+            'tr > td > a[data-placement="top"]'
+        )
+
+        lastCurDate = str(submit_date[19])[130:154].split()
+        lastCurYear = lastCurDate[0].split('년')
+        lastCurMonth = lastCurDate[1].split('월')
+        lastCurDay = lastCurDate[2].split('일')
+ 
+        if(int(lastCurYear[0]) > int(stYear)) :
+            # 페이지 크롤링
+            pageCrawling(file, result)
+
+        elif(int(lastCurYear[0]) == int(stYear)) :
+            if(int(lastCurMonth[0]) > int(stMonth)) :
+                # 페이지 크롤링
+                pageCrawling(file, result)
+
+            elif(int(lastCurMonth[0]) == int(stMonth)) :
+                if(int(lastCurDay[0]) >= int(stDay)) :
+                    # 페이지 크롤링
+                    pageCrawling(file, result)
+
+                else :
+                    # 해당 페이지 크롤링 후 break
+                    for i in range(0,20,1) :
+                        curDate = str(submit_date[i])[130:154].split()
+                        curDay = curDate[2].split('일')
+                        print('%s일 입니다.' %(curDay))
+
+                        if(int(curDay[0]) < int(stDay)) :
+                            indexCrawling(i, file, result)
+                            crawlingFinish = True
+                            break
+            else :
+                # 해당 페이지 크롤링 후 break
+                for i in range(0,20,1) :
+                    curDate = str(submit_date[i])[130:154].split()
+                    curMonth = curDate[1].split('월')
+
+                    if(int(curMonth[0]) < int(stMonth)) :
+                        indexCrawling(i, file, result)
+                        crawlingFinish = True
+                        break
+        else :
+            # 해당 페이지 크롤링 후 break
+            for i in range(0,20,1) :
+                curDate = str(submit_date[i])[130:154].split()
+                curYear = curDate[0].split('년')
+
+                if(int(curYear[0]) < int(stYear)) :
+                    indexCrawling(i, file, result)
+                    crawlingFinish = True
+                    break
+        
+        if(crawlingFinish) :
+            break
+
+        url -= 20
+    
+    file.close()
+
+    print('\n\n==========Done!==========')
+    input('Press Any Key ')
+    return 0
 
 if __name__ == '__main__' :
     main()
