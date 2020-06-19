@@ -1,5 +1,4 @@
 import requests
-import re
 from bs4 import BeautifulSoup
 from tqdm import tqdm
 
@@ -70,8 +69,7 @@ def pageCrawling(file, result) :
         if(dataByCrawling[i].text == '') :
             file.write('공백')
         else :
-            noSpace = re.sub('&nbsp;', '', dataByCrawling[i].text)
-            file.write(noSpace)
+            file.write(dataByCrawling[i].text)
         file.write(' ')
 
 def indexCrawling(index, file, result) :
@@ -87,8 +85,7 @@ def indexCrawling(index, file, result) :
         if(dataByCrawling[i].text == '') :
             file.write('공백')
         else :
-            noSpace = re.sub('&nbsp;', '', dataByCrawling[i].text)
-            file.write(noSpace)
+            file.write(dataByCrawling[i].text)
         file.write(' ')
 
 
